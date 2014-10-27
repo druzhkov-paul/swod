@@ -1,0 +1,25 @@
+language: cpp
+compiler:
+  - gcc
+before_install:
+  - sudo apt-get update -qq
+  - mkdir ../opencv/
+  - cd ../opencv/
+  - wget http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.9/opencv-2.4.9.zip/download
+  - unzip download
+  - mkdir build-opencv
+  - cd ./build-opencv/
+install:
+  - cmake ../opencv-2.4.9/ -DBUILD_opencv_apps=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_contrib=OFF -DBUILD_opencv_features2d=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_gpu=OFF -DBUILD_opencv_legacy=OFF -DBUILD_opencv_nonfree=OFF -DBUILD_opencv_ocl=OFF -DBUILD_opencv_photo=OFF -DBUILD_opencv_python=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_superres=OFF -DBUILD_opencv_ts=OFF -DBUILD_opencv_videostab=OFF -DBUILD_opencv_world=OFF -DBUILD_DOCS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF
+  - make opencv_core opencv_objdetect opencv_ml opencv_imgproc opencv_video opencv_highgui
+  - sudo make install
+before_script:
+  - mkdir ../../build
+  - cd ../../build
+script:
+  - cmake ../swod
+  - make -j5
+  - cd ./bin
+  - ./swod_test
+notifications:
+  email: false
