@@ -10,8 +10,8 @@ before_install:
   - mkdir build-opencv
   - cd ./build-opencv/
 install:
-  - cmake ../opencv-2.4.9/ -DBUILD_opencv_apps=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_contrib=OFF -DBUILD_opencv_features2d=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_gpu=OFF -DBUILD_opencv_legacy=OFF -DBUILD_opencv_nonfree=OFF -DBUILD_opencv_ocl=OFF -DBUILD_opencv_photo=OFF -DBUILD_opencv_python=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_superres=OFF -DBUILD_opencv_ts=OFF -DBUILD_opencv_videostab=OFF -DBUILD_opencv_world=OFF -DBUILD_DOCS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF
-  - make opencv_core opencv_objdetect opencv_ml opencv_imgproc opencv_video opencv_highgui
+  - cmake ../opencv-2.4.9/ -DBUILD_opencv_apps=OFF -DBUILD_opencv_calib3d=OFF -DBUILD_opencv_contrib=OFF -DBUILD_opencv_features2d=OFF -DBUILD_opencv_flann=OFF -DBUILD_opencv_gpu=OFF -DBUILD_opencv_legacy=OFF -DBUILD_opencv_nonfree=OFF -DBUILD_opencv_ocl=OFF -DBUILD_opencv_photo=OFF -DBUILD_opencv_python=OFF -DBUILD_opencv_stitching=OFF -DBUILD_opencv_superres=OFF -DBUILD_opencv_ts=OFF -DBUILD_opencv_videostab=OFF -DBUILD_opencv_world=OFF -DBUILD_DOCS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_TESTS=OFF -DBUILD_JAVA=OFF
+  - make -j5
   - sudo make install
 before_script:
   - mkdir ../../build
