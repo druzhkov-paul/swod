@@ -15,7 +15,7 @@ TEST(swod, DPVideoFileCreateInstance)
 }
 
 
-TEST(swod, DISABLED_DPVideoFileOpenVideo)
+TEST(swod, DPVideoFileOpenVideo)
 {
     initDataProviders();
     Ptr<DataProvider> videoFile =
