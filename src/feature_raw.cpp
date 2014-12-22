@@ -1,5 +1,6 @@
 #include "swod/feature_raw.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include <cmath>
 
 using namespace cv;
 using namespace std;
@@ -12,7 +13,14 @@ namespace
 
 
 RawPixelParams::RawPixelParams()
-    : winSizeW(64), winSizeH(128), winStrideW(8), winStrideH(8)
+    : winSizeW(64),
+      winSizeH(128),
+      winStrideW(8),
+      winStrideH(8),
+      doNormalization(true),
+      normalizationRegularizer(1e-5),
+      doWhitening(true),
+      whiteningTransform(Mat::eye(64 * 128, 64 * 128, CV_32F))
 {}
 
 
@@ -22,6 +30,10 @@ RawPixelParams::RawPixelParams(const RawPixelParams & p)
     winSizeH = p.winSizeH;
     winStrideW = p.winStrideW;
     winStrideH = p.winStrideH;
+    doNormalization = p.doNormalization;
+    normalizationRegularizer = p.normalizationRegularizer;
+    doWhitening = p.doWhitening;
+    whiteningTransform = p.whiteningTransform.clone();
 }
 
 
@@ -31,6 +43,10 @@ RawPixelParams & RawPixelParams::operator= (const RawPixelParams & p)
     winSizeH = p.winSizeH;
     winStrideW = p.winStrideW;
     winStrideH = p.winStrideH;
+    doNormalization = p.doNormalization;
+    normalizationRegularizer = p.normalizationRegularizer;
+    doWhitening = p.doWhitening;
+    whiteningTransform = p.whiteningTransform.clone();
     return *this;
 }
 
@@ -76,6 +92,14 @@ void RawPixel::getFeatureVector(int positionX,
     Mat patch = scaledImg(roi).clone();
     patch = patch.reshape(1, 1);
     patch.convertTo(featureVector, CV_32F);
+    if (params.doNormalization)
+    {
+        normalizeSample(featureVector);
+    }
+    if (params.doWhitening)
+    {
+        whitenSample(featureVector);
+    }
 }
 
 
@@ -150,4 +174,22 @@ vector<vector<DataTypeTime> > RawPixel::getRequiredSources() const
     vector<vector<DataTypeTime> > sources(1);
     sources[0].push_back(SOURCE_IMAGE);
     return sources;
+}
+
+
+void RawPixel::normalizeSample(Mat & sample) const
+{
+    Scalar mean, sd;
+    meanStdDev(sample, mean, sd);
+    float m = static_cast<float>(mean[0]);
+    float var = static_cast<float>(sd[0]);
+    var *= var;
+    sample -= m;
+    sample /= sqrt(var + params.normalizationRegularizer);
+}
+
+
+void RawPixel::whitenSample(Mat & sample) const
+{
+    sample = params.whiteningTransform * sample;
 }

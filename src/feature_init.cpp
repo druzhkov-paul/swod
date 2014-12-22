@@ -65,7 +65,11 @@ CV_INIT_ALGORITHM(RawPixel, "SWOD.Feature.RawPixel",
                   obj.info()->addParam(obj, "winSizeW", obj.params.winSizeW, true);
                   obj.info()->addParam(obj, "winSizeH", obj.params.winSizeH, true);
                   obj.info()->addParam(obj, "winStrideW", obj.params.winStrideW, true);
-                  obj.info()->addParam(obj, "winStrideH", obj.params.winStrideH, true));
+                  obj.info()->addParam(obj, "winStrideH", obj.params.winStrideH, true);
+                  obj.info()->addParam(obj, "doNormalization", obj.params.doNormalization, true);
+                  obj.info()->addParam(obj, "normalizationRegularizer", obj.params.normalizationRegularizer, true);
+                  obj.info()->addParam(obj, "doWhitening", obj.params.doWhitening, true);
+                  obj.info()->addParam(obj, "whiteningTransform", obj.params.whiteningTransform, true));
 
 
 bool initFeatures()

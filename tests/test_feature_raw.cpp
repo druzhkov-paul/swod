@@ -26,6 +26,10 @@ TEST(swod, FeatureRawPixelReadWrite)
     params.winSizeW = 5;
     params.winStrideH = 2;
     params.winStrideW = 4;
+    params.doNormalization = false;
+    params.normalizationRegularizer = 1.0f;
+    params.doWhitening = false;
+    params.whiteningTransform = Mat::eye(15, 15, CV_32F);
     raw->setParams(params);
 
     char tempFileName[L_tmpnam];
@@ -49,6 +53,11 @@ TEST(swod, FeatureRawPixelReadWrite)
     EXPECT_EQ(5, raw->get<int>("winSizeW"));
     EXPECT_EQ(2, raw->get<int>("winStrideH"));
     EXPECT_EQ(4, raw->get<int>("winStrideW"));
+    EXPECT_FALSE(raw->get<bool>("doNormalization"));
+    EXPECT_EQ(1.0f, raw->get<float>("normalizationRegularizer"));
+    EXPECT_FALSE(raw->get<bool>("doWhitening"));
+    EXPECT_EQ(15, raw->get<Mat>("whiteningTransform").rows);
+    EXPECT_EQ(15, raw->get<Mat>("whiteningTransform").cols);
 }
 
 
@@ -64,6 +73,8 @@ TEST(swod, FeatureRawPixelDescription)
     params.winSizeW = 5;
     params.winStrideH = 2;
     params.winStrideW = 3;
+    params.doNormalization = false;
+    params.doWhitening = false;
     raw->setParams(params);
 
     Mat img(5, 11, CV_8UC1);

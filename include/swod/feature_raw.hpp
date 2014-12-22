@@ -12,6 +12,10 @@ struct RawPixelParams
     int winSizeH;
     int winStrideW;
     int winStrideH;
+    bool doNormalization;
+    float normalizationRegularizer;
+    bool doWhitening;
+    cv::Mat whiteningTransform;
 };
 
 
@@ -41,8 +45,10 @@ public:
 private:
     void initDescriptor();
 
+    void normalizeSample(cv::Mat & sample) const;
+    void whitenSample(cv::Mat & sample) const;
+
     cv::Mat img;
     cv::Mat scaledImg;
-    int featureVectorLength;
     RawPixelParams params;
 };
