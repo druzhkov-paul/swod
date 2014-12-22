@@ -145,11 +145,13 @@ void DRFClassifier::write(FileStorage & fs) const
     fs << "random_forests" << "[";
     for (int i = 0; i < params.layersNum; ++i)
     {
+        fs << "{";
         fs << "treeDepth" << params.rfParams[i].max_depth;
         fs << "minSamplesInLeaf" << params.rfParams[i].min_sample_count;
         fs << "useSurrogateSplits" << params.rfParams[i].use_surrogates;
         fs << "treesNum" << params.rfParams[i].term_crit.max_iter;
         fs << "activeFeaturesPerNode" << params.rfParams[i].nactive_vars;
+        fs << "}";
     }
     fs << "]";
 }

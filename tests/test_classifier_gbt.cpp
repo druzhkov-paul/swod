@@ -23,7 +23,7 @@ TEST(swod, ClassifierGBTReadWriteParams)
 
     char tempFileName[L_tmpnam];
     ASSERT_EQ(tempFileName, tmpnam(tempFileName));
-    string fileName = string(tempFileName) + ".нml";
+    string fileName = string(tempFileName) + ".yml";
 
     FileStorage outFs(fileName, FileStorage::WRITE);
     outFs << "gbt" << "{";

@@ -69,9 +69,11 @@ void RawPixel::getFeatureVector(int positionX,
     int featureVectorSize = params.winSizeW * params.winSizeH;
     featureVector.create(1, featureVectorSize, CV_32F);
 
-    Rect roi(positionY * params.winStrideH, positionX * params.winStrideW,
-             positionY * params.winStrideH + params.winStrideH, positionX * params.winStrideW + params.winStrideW);
-    Mat patch = scaledImg(roi);
+    Rect roi(positionX * params.winStrideW,
+             positionY * params.winStrideH,
+             positionX * params.winStrideW + params.winSizeW,
+             positionY * params.winStrideH + params.winSizeH);
+    Mat patch = scaledImg(roi).clone();
     patch = patch.reshape(1, 1);
     patch.convertTo(featureVector, CV_32F);
 }
