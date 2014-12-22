@@ -29,10 +29,18 @@ CV_INIT_ALGORITHM(GBTClassifier, "SWOD.Classifier.GBT",
                   obj.info()->addParam(obj, "modelName", obj.modelName, true));
 
 
+CV_INIT_ALGORITHM(DRFClassifier, "SWOD.Classifier.DRF",
+                  obj.info()->addParam(obj, "layersNum", obj.params.layersNum, true);
+                  obj.info()->addParam(obj, "modelFileName", obj.modelFileName, true);
+                  obj.info()->addParam(obj, "modelName", obj.modelName, true));
+
+
 bool initClassifiers()
 {
   Ptr<Algorithm> svm = createSVMClassifier();
   Ptr<Algorithm> gbt = createGBTClassifier();
+  Ptr<Algorithm> drf = createDRFClassifier();
   return (svm->info() != 0) &&
-         (gbt->info() != 0);
+         (gbt->info() != 0) &&
+         (drf->info() != 0);
 }

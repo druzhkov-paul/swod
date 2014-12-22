@@ -61,14 +61,23 @@ CV_INIT_ALGORITHM(Hue, "SWOD.Feature.Hue",
                   obj.info()->addParam(obj, "bins", obj.params.bins, true));
 
 
+CV_INIT_ALGORITHM(RawPixel, "SWOD.Feature.RawPixel",
+                  obj.info()->addParam(obj, "winSizeW", obj.params.winSizeW, true);
+                  obj.info()->addParam(obj, "winSizeH", obj.params.winSizeH, true);
+                  obj.info()->addParam(obj, "winStrideW", obj.params.winStrideW, true);
+                  obj.info()->addParam(obj, "winStrideH", obj.params.winStrideH, true));
+
+
 bool initFeatures()
 {
   Ptr<Algorithm> opencvHOG = createOpenCVHOG();
   Ptr<Algorithm> piotrHOG = createPiotrHOG();
   Ptr<Algorithm> hof = createHOF();
   Ptr<Algorithm> hue = createHue();
+  Ptr<Algorithm> raw = createRawPixel();
   return (opencvHOG->info() != 0) &&
           (piotrHOG->info() != 0) &&
           (hof->info() != 0) &&
-          (hue->info() != 0);
+          (hue->info() != 0) &&
+          (raw->info() != 0);
 }

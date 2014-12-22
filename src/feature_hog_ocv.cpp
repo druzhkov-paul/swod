@@ -170,7 +170,8 @@ void OpenCVHOG::computeOnNewImage(const SourcesMap & sources)
 void OpenCVHOG::computeOnNewScale(const float scale)
 {
     CV_Assert(0.0f < scale);
-    Size scaledImageSize((int)(img.cols / scale), (int)(img.rows / scale));
+    Size scaledImageSize(static_cast<int>(img.cols / scale),
+                         static_cast<int>(img.rows / scale));
     CV_Assert(0 < scaledImageSize.width && 0 < scaledImageSize.height);
     int method = (scale <= 1.0f) ? INTER_CUBIC : INTER_AREA;
     Mat scaledImg;

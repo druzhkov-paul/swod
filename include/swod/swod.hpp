@@ -14,10 +14,12 @@
 #include "swod/feature_hog_dollar.hpp"
 #include "swod/feature_hof.hpp"
 #include "swod/feature_hue.hpp"
+#include "swod/feature_raw.hpp"
 
 #include "swod/classifier.hpp"
 #include "swod/classifier_svm.hpp"
 #include "swod/classifier_gbt.hpp"
+#include "swod/classifier_deep_random_forest.hpp"
 
 #include "swod/nms.hpp"
 #include "swod/nms_pair_max.hpp"
