@@ -34,9 +34,8 @@ int DRFClassifier::predict(const Mat & sample,
     weights.resize(2);
     weights[0] = 1.0f - prob;
     weights[1] = prob;
-    CV_DbgAssert(static_cast<int>(0.5f < prob) == static_cast<int>(rf.predict(sample)));
-
-    return (0.5f < prob);
+    CV_DbgAssert(static_cast<int>(0.5f <= prob) == static_cast<int>(rf.predict(sample)));
+    return (0.5f <= prob);
 }
 
 
@@ -139,7 +138,7 @@ void DRFClassifier::read(const FileNode & fn)
 
 void DRFClassifier::write(FileStorage & fs) const
 {
-    CV_Assert(params.layersNum == params.rfParams.size());
+    CV_Assert(static_cast<size_t>(params.layersNum) == params.rfParams.size());
 
     info()->write(this, fs);
     fs << "random_forests" << "[";

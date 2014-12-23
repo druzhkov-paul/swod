@@ -71,6 +71,7 @@ void RawPixel::read(const cv::FileNode & fn)
 
 Size RawPixel::getNumOfSpatialSteps() const
 {
+    CV_Assert(!scaledImg.empty());
     return Size((scaledImg.cols - params.winSizeW) / params.winStrideW + 1,
                 (scaledImg.rows - params.winSizeH) / params.winStrideH + 1);
 }
@@ -80,15 +81,18 @@ void RawPixel::getFeatureVector(int positionX,
                                 int positionY,
                                 Mat & featureVector) const
 {
+    CV_Assert(!scaledImg.empty());
     CV_Assert(0 <= positionX);
     CV_Assert(0 <= positionY);
-    int featureVectorSize = params.winSizeW * params.winSizeH;
-    featureVector.create(1, featureVectorSize, CV_32F);
+    CV_Assert(positionX * params.winStrideW + params.winSizeW <= scaledImg.cols);
+    CV_Assert(positionY * params.winStrideH + params.winSizeH <= scaledImg.rows);
+
+    featureVector.create(1, getFeatureVectorLength(), CV_32F);
 
     Rect roi(positionX * params.winStrideW,
              positionY * params.winStrideH,
-             positionX * params.winStrideW + params.winSizeW,
-             positionY * params.winStrideH + params.winSizeH);
+             params.winSizeW,
+             params.winSizeH);
     Mat patch = scaledImg(roi).clone();
     patch = patch.reshape(1, 1);
     patch.convertTo(featureVector, CV_32F);
@@ -117,7 +121,16 @@ void RawPixel::computeOnNewImage(const SourcesMap & sources)
 {
     CV_Assert(sources.count(SOURCE_IMAGE));
     CV_Assert(!sources.at(SOURCE_IMAGE).empty());
-    sources.at(SOURCE_IMAGE).copyTo(img);
+    const Mat & im = sources.at(SOURCE_IMAGE);
+    CV_Assert((im.channels() == 1) || (im.channels() == 3));
+    if (im.channels() == 1)
+    {
+        im.copyTo(img);
+    }
+    else
+    {
+        cvtColor(im, img, CV_BGR2GRAY);
+    }
     scaledImg = img;
 }
 

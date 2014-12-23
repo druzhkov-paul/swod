@@ -316,7 +316,7 @@ int main(int argc, char ** argv)
 
     cout << "generating random negative samples..." << flush;
     for (size_t i = 0; i < negativeAnn.size(); ++i)
-	{
+    {
         negativeAnn[i].generateRandomAnnotation(detectorParams.winSize,
                                                 Size(),
                                                 detectorParams.minObjectHeight,
