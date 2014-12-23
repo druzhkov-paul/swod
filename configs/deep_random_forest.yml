@@ -1,0 +1,13 @@
+%YAML:1.0
+drf:
+   name: "SWOD.Classifier.DRF"
+   layersNum: 1
+   modelFileName: ""
+   modelName: ""
+   random_forests:
+      -
+         treeDepth: 5
+         minSamplesInLeaf: 10
+         useSurrogateSplits: 0
+         treesNum: 50
+         activeFeaturesPerNode: 0
