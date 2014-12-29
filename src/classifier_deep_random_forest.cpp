@@ -26,15 +26,17 @@ int DRFClassifier::predict(const Mat & sample,
     Mat featureDescription(sample);
     for (int i = 0; i < params.layersNum - 1; ++i)
     {
-        randomForests[i].getLeavesIndices(featureDescription, featureDescription);
+        Mat newFeatureDescription;
+        randomForests[i].getLeavesIndices(featureDescription, newFeatureDescription);
+        featureDescription = newFeatureDescription;
     }
 
     const RandomForest & rf = randomForests[params.layersNum - 1];
-    float prob = rf.predict_prob(sample);
+    float prob = rf.predict_prob(featureDescription);
     weights.resize(2);
     weights[0] = 1.0f - prob;
     weights[1] = prob;
-    CV_DbgAssert(static_cast<int>(0.5f <= prob) == static_cast<int>(rf.predict(sample)));
+    CV_DbgAssert(static_cast<int>(0.5f <= prob) == static_cast<int>(rf.predict(featureDescription)));
     return (0.5f <= prob);
 }
 

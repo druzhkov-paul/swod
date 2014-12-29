@@ -26,7 +26,7 @@ namespace
 
 int RandomForest::getNumOfLeaves(int treeIdx) const
 {
-    CV_Assert(0 < treeIdx);
+    CV_Assert(0 <= treeIdx);
     CV_Assert(treeIdx < ntrees);
 
     CvForestTree * tree = trees[treeIdx];
@@ -39,7 +39,7 @@ int RandomForest::getNumOfLeaves(int treeIdx) const
 void RandomForest::getLeavesMap(int treeIdx,
                                 map<const CvDTreeNode*, int> & leavesMap) const
 {
-    CV_Assert(0 < treeIdx);
+    CV_Assert(0 <= treeIdx);
     CV_Assert(treeIdx < ntrees);
 
     CvForestTree * tree = trees[treeIdx];

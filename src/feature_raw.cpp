@@ -95,6 +95,7 @@ void RawPixel::getFeatureVector(int positionX,
              params.winSizeH);
     Mat patch = scaledImg(roi).clone();
     patch = patch.reshape(1, 1);
+    CV_Assert(patch.total() == getFeatureVectorLength());
     patch.convertTo(featureVector, CV_32F);
     if (params.doNormalization)
     {
@@ -122,14 +123,15 @@ void RawPixel::computeOnNewImage(const SourcesMap & sources)
     CV_Assert(sources.count(SOURCE_IMAGE));
     CV_Assert(!sources.at(SOURCE_IMAGE).empty());
     const Mat & im = sources.at(SOURCE_IMAGE);
-    CV_Assert((im.channels() == 1) || (im.channels() == 3));
-    if (im.channels() == 1)
+    CV_Assert((im.type() == CV_8UC1) || (im.type() == CV_8UC3));
+    if (im.type() == CV_8UC1)
     {
         im.copyTo(img);
     }
     else
     {
         cvtColor(im, img, CV_BGR2GRAY);
+        CV_Assert(img.type() == CV_8U);
     }
     scaledImg = img;
 }
