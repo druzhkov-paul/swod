@@ -32,12 +32,20 @@ int DRFClassifier::predict(const Mat & sample,
     }
 
     const RandomForest & rf = randomForests[params.layersNum - 1];
-    float prob = rf.predict_prob(featureDescription);
-    weights.resize(2);
-    weights[0] = 1.0f - prob;
-    weights[1] = prob;
-    CV_DbgAssert(static_cast<int>(0.5f <= prob) == static_cast<int>(rf.predict(featureDescription)));
-    return (0.5f <= prob);
+    rf.predict(featureDescription, Mat(), weights);
+    int label = 0;
+    float maxScore = weights[0];
+    for (size_t i = 1; i < weights.size(); ++i)
+    {
+        if (maxScore < weights[i])
+        {
+            maxScore = weights[i];
+            label = i;
+        }
+    }
+    //minMaxIdx(weights, 0, 0, 0, &label);
+
+    return label;
 }
 
 
@@ -133,6 +141,8 @@ void DRFClassifier::read(const FileNode & fn)
         (*i)["minSamplesInLeaf"] >> params.rfParams[j].min_sample_count;
         (*i)["useSurrogateSplits"] >> params.rfParams[j].use_surrogates;
         (*i)["treesNum"] >> params.rfParams[j].term_crit.max_iter;
+        params.rfParams[j].term_crit.type = CV_TERMCRIT_ITER;
+        params.rfParams[j].term_crit.epsilon = 0.0;
         (*i)["activeFeaturesPerNode"] >> params.rfParams[j].nactive_vars;
     }
 }

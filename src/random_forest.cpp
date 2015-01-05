@@ -1,6 +1,7 @@
 #include "swod/random_forest.hpp"
 
 using std::map;
+using std::vector;
 using namespace cv;
 
 namespace
@@ -57,5 +58,32 @@ void RandomForest::getLeavesIndices(const Mat & sample,
         getLeavesMap(i, leaves);
         CvDTreeNode * predictedLeaf = trees[i]->predict(sample);
         leavesIndices.at<float>(i) = static_cast<float>(leaves[predictedLeaf]);
+    }
+}
+
+
+void RandomForest::predict(const Mat & sample,
+                           const Mat & missing,
+                           vector<float> & scores) const
+{
+    if (1 < nclasses)
+    {
+        scores.assign(nclasses, 0.0f);
+        for (int i = 0; i < ntrees; ++i)
+        {
+            CvDTreeNode * predictedNode = trees[i]->predict(sample, missing);
+            int classIdx = predictedNode->class_idx;
+            CV_Assert(0 <= classIdx && classIdx < nclasses);
+            ++scores[classIdx];
+        }
+
+        for (size_t i = 0; i < scores.size(); ++i)
+        {
+            scores[i] /= static_cast<float>(ntrees);
+        }
+    }
+    else
+    {
+        CV_Error(CV_StsBadArg, "This function works for classification problems only.");
     }
 }
