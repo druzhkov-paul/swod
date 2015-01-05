@@ -128,19 +128,19 @@ void dumpDatasetCSV(const Mat & dataset,
 void getClassifierError(const Classifier * cl,
                         const Mat & dataset,
                         const Mat & responses,
-                        Mat & errors,
+                        Mat & confusion,
                         int classesNum = 2)
 {
 
-    errors.create(classesNum, classesNum, CV_32S);
-    errors = Scalar();
+    confusion.create(classesNum, classesNum, CV_32S);
+    confusion = Scalar();
     for (int i = 0; i < dataset.rows; ++i)
     {
         Mat sample = dataset.row(i);
         vector<float> confidence;
         int prediction = cl->predict(sample, confidence);
         int response = responses.at<float>(i);
-        errors.at<int>(prediction, response) += 1;
+        confusion.at<int>(prediction, response) += 1;
     }
 }
 
@@ -150,19 +150,19 @@ void printClassificationError(const Classifier * cl,
                               const Mat & responses,
                               int classesNum = 2)
 {
-    Mat errors;
-    getClassifierError(cl, dataset, responses, errors, classesNum);
+    Mat confusion;
+    getClassifierError(cl, dataset, responses, confusion, classesNum);
     for (int i = 0; i < classesNum; ++i)
     {
         for (int j = 0; j < classesNum - 1; ++j)
         {
-            cout << errors.at<int>(i, j) << "\t";
+            cout << confusion.at<int>(i, j) << "\t";
         }
-        cout << errors.at<int>(i, classesNum - 1) << endl;
+        cout << confusion.at<int>(i, classesNum - 1) << endl;
     }
 
-    float accuracy = static_cast<float>(sum(errors.diag())[0]) /
-                     static_cast<float>(sum(errors.reshape(1, 1))[0]);
+    float accuracy = static_cast<float>(sum(confusion.diag())[0]) /
+                     static_cast<float>(sum(confusion.reshape(1, 1))[0]);
     cout << "accuracy: " << accuracy << endl;
 }
 
@@ -181,7 +181,6 @@ int main(int argc, char ** argv)
                                    "{a|ann||path to annotation with positive examples}"
                                    "{|annname|annotation|annotation name}"
                                    "{|dump||prefix of files to save dataset to}"
-                                   "{|mirror|true|use horizontaly flip positives for training}"
                                    "{|seed||seed to initialize RNG}";
     CommandLineParser cmdParser(argc, argv, commandLineKeys.c_str());
     if (cmdParser.get<bool>("help"))
@@ -242,6 +241,9 @@ int main(int argc, char ** argv)
     cout << classifierName << " classifier is used" << endl;
     string classifierModelFile = classifierFn["modelFileName"];
     string classifierModelName = classifierFn["modelName"];
+    classifier->loadModel(classifierModelFile, classifierModelName);
+
+    config.release();
 
 
     vector<ImageAnnotation> annotation;
@@ -259,13 +261,12 @@ int main(int argc, char ** argv)
 
     Ptr<ImageFileReader> fileReader = Algorithm::create<ImageFileReader>("SWOD.DataProvider.ImageFileReader");
     Mat samples, responses;
-    int samplesNum = (static_cast<int>(cmdParser.get<bool>("mirror")) + 1) * getTotalBboxesNum(annotation);
+    int samplesNum = getTotalBboxesNum(annotation);
     samples.create(samplesNum, features.getTotalFeatureVectorLength(), CV_32F);
     responses.create(samplesNum, 1, CV_32F);
 
     cout << "extracting samples..." << flush;
-    extractSamples(fileReader, annotation, features, samples, responses,
-                   cmdParser.get<bool>("mirror"));
+    extractSamples(fileReader, annotation, features, samples, responses, false);
     cout << "done" << endl;
     cout << "dataset size: " << samplesNum << " x " << samples.cols << endl;
 
@@ -278,19 +279,13 @@ int main(int argc, char ** argv)
         cout << "done" << endl;
     }
 
-    cout << "training classifier..." << flush;
-    classifier->train(samples.rowRange(0, samplesNum),
-                      responses.rowRange(0, samplesNum));
-    cout << "done" << endl;
-
+    cout << "testing classifier..." << endl;
     double maxResponse = 0.0;
     minMaxLoc(responses.rowRange(0, samplesNum), 0, &maxResponse);
     printClassificationError(classifier,
                              samples.rowRange(0, samplesNum),
                              responses.rowRange(0, samplesNum),
                              static_cast<int>(maxResponse) + 1);
-
-    classifier->saveModel(classifierModelFile, classifierModelName);
 
     return 0;
 }
