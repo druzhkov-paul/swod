@@ -250,7 +250,7 @@ int main(int argc, char ** argv)
     FileNode detectorParamsFn = config["detector_params"];
     if (detectorParamsFn.empty())
     {
-        cout << "Error. detection_params tag is missed in cofig file" << endl;
+        cout << "Error. detection_params tag is missed in config file" << endl;
         return 2;
     }
     cout << "reading general detector parameters..." << flush;
