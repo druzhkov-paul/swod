@@ -144,7 +144,8 @@ void getWhiteningTransform(const Mat & dataset,
                            float epsilon)
 {
     Mat cov, m;
-    calcCovarMatrix(dataset, cov, m, CV_COVAR_NORMAL | CV_COVAR_ROWS | CV_COVAR_SCALE, CV_64F);
+    calcCovarMatrix(dataset, cov, m, CV_COVAR_NORMAL | CV_COVAR_ROWS | CV_COVAR_SCALE, CV_32F);
+    cout << "covariance matrix size: " << cov.rows << " x " << cov.cols << endl;
 
     Mat eigenValues, eigenVectors;
     eigen(cov, eigenValues, eigenVectors);
@@ -154,11 +155,12 @@ void getWhiteningTransform(const Mat & dataset,
 
     for (size_t i = 0; i < eigenValues.total(); ++i)
     {
-        eigenValues.at<double>(i) = 1.0 / sqrt(eigenValues.at<double>(i) + epsilon);
+        //eigenValues.at<double>(i) = 1.0 / sqrt(eigenValues.at<double>(i) + epsilon);
+        eigenValues.at<float>(i) = 1.0f / sqrt(eigenValues.at<float>(i) + epsilon);
     }
 
     transf = eigenVectors.t() * Mat::diag(eigenValues) * eigenVectors;
-    transf.convertTo(transf, CV_32F);
+    //transf.convertTo(transf, CV_32F);
 }
 
 
@@ -290,7 +292,7 @@ int main(int argc, char ** argv)
         cout << "done" << endl;
     }
 
-    cout << "geting whitening transform..." << flush;
+    cout << "computing whitening transform..." << flush;
     Mat whiteningTransform;
     float whiteningEpsilon = cmdParser.get<float>("whiteeps");
     getWhiteningTransform(samples.rowRange(0, samplesNum),
@@ -299,7 +301,7 @@ int main(int argc, char ** argv)
     cout << "done" << endl;
 
     cout << "saving whitening matrix..." << flush;
-    FileStorage fs(cmdParser.get<string>("whitefile"), FileStorage::READ);
+    FileStorage fs(cmdParser.get<string>("whitefile"), FileStorage::WRITE);
     fs << "whiteningMat" << whiteningTransform;
     fs.release();
     cout << "done" << endl;
