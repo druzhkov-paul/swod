@@ -15,9 +15,11 @@ int GBTClassifier::predict(const Mat & sample,
                            vector<float> & weights) const
 {
     float prediction = GBTrees::predict(sample, Mat(), &weights);
+    /*
     float score = weights[0] - weights[1];
     weights[0] = score;
     weights[1] = -score;
+    */
     return static_cast<int>(prediction);
 }
 

@@ -6,8 +6,8 @@ using namespace cv;
 
 namespace
 {
-    void getLeaves(map<const CvDTreeNode*, int> & leaves,
-                   const CvDTreeNode * node)
+    void getLeaves(map<CvDTreeNode*, int> & leaves,
+                   CvDTreeNode * node)
     {
         if (node->left != NULL)
         {
@@ -24,29 +24,43 @@ namespace
     }
 }
 
-
+/*
 int RandomForest::getNumOfLeaves(int treeIdx) const
 {
     CV_Assert(0 <= treeIdx);
     CV_Assert(treeIdx < ntrees);
 
     CvForestTree * tree = trees[treeIdx];
-    map<const CvDTreeNode*, int> leaves;
-    getLeaves(leaves, tree->get_root());
+    map<CvDTreeNode*, int> leaves;
+    getLeaves(leaves, const_cast<CvDTreeNode*>(tree->get_root()));
     return leaves.size();
 }
-
+*/
 
 void RandomForest::getLeavesMap(int treeIdx,
-                                map<const CvDTreeNode*, int> & leavesMap) const
+                                map<CvDTreeNode*, int> & leavesMap) const
 {
     CV_Assert(0 <= treeIdx);
     CV_Assert(treeIdx < ntrees);
 
     CvForestTree * tree = trees[treeIdx];
-    getLeaves(leavesMap, tree->get_root());
+    getLeaves(leavesMap, const_cast<CvDTreeNode*>(tree->get_root()));
 }
 
+/*
+void RandomForest::getLeavesIndices(const Mat & sample,
+                                    Mat & leavesIndices) const
+{
+    leavesIndices.create(1, ntrees, CV_32F);
+    for (int i = 0; i < ntrees; ++i)
+    {
+        map<CvDTreeNode*, int> leaves;
+        getLeavesMap(i, leaves);
+        CvDTreeNode * predictedLeaf = trees[i]->predict(sample);
+        leavesIndices.at<float>(i) = static_cast<float>(leaves[predictedLeaf]);
+    }
+}
+*/
 
 void RandomForest::getLeavesIndices(const Mat & sample,
                                     Mat & leavesIndices) const
@@ -54,10 +68,8 @@ void RandomForest::getLeavesIndices(const Mat & sample,
     leavesIndices.create(1, ntrees, CV_32F);
     for (int i = 0; i < ntrees; ++i)
     {
-        map<const CvDTreeNode*, int> leaves;
-        getLeavesMap(i, leaves);
         CvDTreeNode * predictedLeaf = trees[i]->predict(sample);
-        leavesIndices.at<float>(i) = static_cast<float>(leaves[predictedLeaf]);
+        leavesIndices.at<float>(i) = predictedLeaf->value;
     }
 }
 
@@ -86,4 +98,33 @@ void RandomForest::predict(const Mat & sample,
     {
         CV_Error(CV_StsBadArg, "This function works for classification problems only.");
     }
+}
+
+
+bool RandomForest::train(const Mat & trainData,
+                         int tflag,
+                         const Mat & responses,
+                         const Mat & varIdx,
+                         const Mat & sampleIdx,
+                         const Mat & varType,
+                         const Mat & missingDataMask,
+                         CvRTParams params)
+{
+    bool res = CvRTrees::train(trainData, tflag, responses, varIdx,
+                               sampleIdx, varType, missingDataMask, params);
+
+    if (1 < nclasses)
+    {
+        for (int i = 0; i < ntrees; ++i)
+        {
+            map<CvDTreeNode*, int> leaves;
+            getLeavesMap(i, leaves);
+            for (auto j = leaves.begin(); j != leaves.end(); ++j)
+            {
+                j->first->value = j->second;
+            }
+        }
+    }
+
+    return res;
 }

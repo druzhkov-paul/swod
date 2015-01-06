@@ -17,7 +17,7 @@ int SVMClassifier::predict(const Mat & sample,
                            vector<float> & weights) const
 {
     int classNum = class_labels->cols;
-    weights.resize(classNum, 0.0f);
+    weights.assign(classNum, 0.0f);
 
     float confidence = CvSVM::predict(sample, true);
     int prediction = 0;
@@ -29,7 +29,7 @@ int SVMClassifier::predict(const Mat & sample,
     }
     else
     {
-        prediction = int(confidence);
+        prediction = static_cast<int>(confidence);
         weights[prediction] = 1.0f;
     }
     return prediction;
