@@ -162,7 +162,7 @@ void printClassificationError(const Classifier * cl,
     }
 
     float accuracy = static_cast<float>(sum(errors.diag())[0]) /
-                     static_cast<float>(sum(errors.reshape(1, 1))[0]);
+                     static_cast<float>(sum(errors)[0]);
     cout << "accuracy: " << accuracy << endl;
 }
 
