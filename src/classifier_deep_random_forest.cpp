@@ -130,8 +130,9 @@ void DRFClassifier::setParams(const DRFClassifierParams & p)
 void DRFClassifier::read(const FileNode & fn)
 {
     info()->read(this, fn);
-    FileNode rfsParams = fn["random_forests"];\
+    FileNode rfsParams = fn["random_forests"];
     params.rfParams.resize(params.layersNum);
+    params.priors.resize(params.layersNum);
     int j = 0;
     for (FileNodeIterator i = rfsParams.begin();
          i != rfsParams.end() && j < params.layersNum;
@@ -144,6 +145,11 @@ void DRFClassifier::read(const FileNode & fn)
         params.rfParams[j].term_crit.type = CV_TERMCRIT_ITER;
         params.rfParams[j].term_crit.epsilon = 0.0;
         (*i)["activeFeaturesPerNode"] >> params.rfParams[j].nactive_vars;
+        if (!(*i)["prior"].empty())
+        {
+            (*i)["prior"] >> params.priors[j];
+            params.rfParams[j].priors = reinterpret_cast<const float*>(params.priors[j].data);
+        }
     }
 }
 
@@ -162,6 +168,7 @@ void DRFClassifier::write(FileStorage & fs) const
         fs << "useSurrogateSplits" << params.rfParams[i].use_surrogates;
         fs << "treesNum" << params.rfParams[i].term_crit.max_iter;
         fs << "activeFeaturesPerNode" << params.rfParams[i].nactive_vars;
+        fs << "prior" << params.priors[i];
         fs << "}";
     }
     fs << "]";
