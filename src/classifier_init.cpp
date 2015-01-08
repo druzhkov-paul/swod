@@ -31,6 +31,7 @@ CV_INIT_ALGORITHM(GBTClassifier, "SWOD.Classifier.GBT",
 
 CV_INIT_ALGORITHM(DRFClassifier, "SWOD.Classifier.DRF",
                   obj.info()->addParam(obj, "layersNum", obj.params.layersNum, true);
+                  obj.info()->addParam(obj, "computeOOBError", obj.params.computeOOBError, true);
                   obj.info()->addParam(obj, "modelFileName", obj.modelFileName, true);
                   obj.info()->addParam(obj, "modelName", obj.modelName, true));
 

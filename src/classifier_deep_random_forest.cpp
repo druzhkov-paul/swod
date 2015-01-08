@@ -1,16 +1,22 @@
 #include "swod/classifier_deep_random_forest.hpp"
 #include <sstream>
+#include <iostream>
 
 using namespace cv;
 using std::vector;
 using std::string;
 using std::stringstream;
 using std::map;
+using std::cout;
+using std::endl;
 
 
 DRFClassifierParams::DRFClassifierParams()
     : layersNum(1),
-      rfParams(1)
+      computeOOBError(false),
+      rfParams(1),
+      priors(1),
+      equalizePriors(1, false)
 {}
 
 
@@ -107,9 +113,13 @@ void DRFClassifier::train(const Mat & dataset,
     }
 
     randomForests.resize(params.layersNum);
-    CvRTrees & rf = randomForests[0];
+    RandomForest & rf = randomForests[0];
     rf.train(dataset, CV_ROW_SAMPLE, responses, Mat(), Mat(),
              Mat(), Mat(), params.rfParams[0]);
+    if (params.computeOOBError)
+    {
+        cout << "oob error: " << rf.getOOBError() << endl;
+    }
 
     if (1 < params.layersNum)
     {
@@ -135,9 +145,13 @@ void DRFClassifier::train(const Mat & dataset,
                 params.rfParams[i].priors = reinterpret_cast<const float*>(prior.data);
             }
 
-            CvRTrees & rf = randomForests[i];
+            RandomForest & rf = randomForests[i];
             rf.train(currentDataset, CV_ROW_SAMPLE, responses, Mat(), Mat(),
                      Mat(), Mat(), params.rfParams[i]);
+            if (params.computeOOBError)
+            {
+                cout << "oob error: " << rf.getOOBError() << endl;
+            }
         }
     }
 }
@@ -193,6 +207,7 @@ void DRFClassifier::read(const FileNode & fn)
     params.rfParams.resize(params.layersNum);
     params.priors.resize(params.layersNum);
     params.equalizePriors.assign(params.layersNum, false);
+
     int j = 0;
     for (FileNodeIterator i = rfsParams.begin();
          i != rfsParams.end() && j < params.layersNum;
@@ -204,6 +219,12 @@ void DRFClassifier::read(const FileNode & fn)
         (*i)["treesNum"] >> params.rfParams[j].term_crit.max_iter;
         params.rfParams[j].term_crit.type = CV_TERMCRIT_ITER;
         params.rfParams[j].term_crit.epsilon = 0.0;
+        if (params.computeOOBError)
+        {
+            params.rfParams[j].term_crit.type += CV_TERMCRIT_EPS;
+            params.rfParams[j].term_crit.epsilon = 1e-10;
+        }
+
         (*i)["activeFeaturesPerNode"] >> params.rfParams[j].nactive_vars;
         FileNode priorNode = (*i)["prior"];
         if (priorNode.isString())

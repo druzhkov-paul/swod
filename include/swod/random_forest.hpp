@@ -23,4 +23,5 @@ public:
                const cv::Mat & varType = cv::Mat(),
                const cv::Mat & missingDataMask = cv::Mat(),
                CvRTParams params = CvRTParams());
+    float getOOBError() const;
 };

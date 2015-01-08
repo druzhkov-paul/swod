@@ -128,3 +128,9 @@ bool RandomForest::train(const Mat & trainData,
 
     return res;
 }
+
+
+float RandomForest::getOOBError() const
+{
+    return static_cast<float>(oob_error);
+}
