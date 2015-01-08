@@ -10,6 +10,7 @@ struct DRFClassifierParams
     int layersNum;
     std::vector<CvRTParams> rfParams;
     std::vector<cv::Mat> priors;
+    std::vector<bool> equalizePriors;
 };
 
 

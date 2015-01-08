@@ -5,6 +5,7 @@ using namespace cv;
 using std::vector;
 using std::string;
 using std::stringstream;
+using std::map;
 
 
 DRFClassifierParams::DRFClassifierParams()
@@ -49,11 +50,61 @@ int DRFClassifier::predict(const Mat & sample,
 }
 
 
+namespace
+{
+    template<typename t>
+    void inverseFrequencies(const Mat & m,
+                     map<t, float> & freq)
+    {
+        freq.clear();
+        for (size_t i = 0; i < m.total(); ++i)
+        {
+            t x = m.at<t>(i);
+            if (freq.count(x))
+            {
+                ++freq[x];
+            }
+            else
+            {
+                freq[x] = 1.0f;
+            }
+        }
+        for (auto i = freq.begin(); i != freq.end(); ++i)
+        {
+            i->second /= static_cast<float>(m.total());
+        }
+    }
+
+
+    template<typename t>
+    void inverseFrequencies(const Mat & m,
+                     Mat & freq)
+    {
+        map<t, float> freqMap;
+        inverseFrequencies<t>(m, freqMap);
+        freq.create(1, freqMap.size(), CV_32F);
+        int j = 0;
+        for (auto i = freqMap.begin(); i != freqMap.end(); ++i, ++j)
+        {
+            freq.at<float>(j) = 1.0f / i->second;
+        }
+    }
+}
+
+
 void DRFClassifier::train(const Mat & dataset,
                           const Mat & responses)
 {
     CV_Assert(0 < params.layersNum);
     CV_Assert(static_cast<size_t>(params.layersNum) == params.rfParams.size());
+
+    if (params.equalizePriors[0])
+    {
+        Mat prior;
+        inverseFrequencies<float>(responses, prior);
+        params.priors[0] = prior;
+        params.rfParams[0].priors = reinterpret_cast<const float*>(prior.data);
+    }
 
     randomForests.resize(params.layersNum);
     CvRTrees & rf = randomForests[0];
@@ -75,6 +126,14 @@ void DRFClassifier::train(const Mat & dataset,
             }
             currentDataset.release();
             currentDataset = newDataset;
+
+            if (params.equalizePriors[i])
+            {
+                Mat prior;
+                inverseFrequencies<float>(responses, prior);
+                params.priors[i] = prior;
+                params.rfParams[i].priors = reinterpret_cast<const float*>(prior.data);
+            }
 
             CvRTrees & rf = randomForests[i];
             rf.train(currentDataset, CV_ROW_SAMPLE, responses, Mat(), Mat(),
@@ -133,6 +192,7 @@ void DRFClassifier::read(const FileNode & fn)
     FileNode rfsParams = fn["random_forests"];
     params.rfParams.resize(params.layersNum);
     params.priors.resize(params.layersNum);
+    params.equalizePriors.assign(params.layersNum, false);
     int j = 0;
     for (FileNodeIterator i = rfsParams.begin();
          i != rfsParams.end() && j < params.layersNum;
@@ -145,9 +205,21 @@ void DRFClassifier::read(const FileNode & fn)
         params.rfParams[j].term_crit.type = CV_TERMCRIT_ITER;
         params.rfParams[j].term_crit.epsilon = 0.0;
         (*i)["activeFeaturesPerNode"] >> params.rfParams[j].nactive_vars;
-        if (!(*i)["prior"].empty())
+        FileNode priorNode = (*i)["prior"];
+        if (priorNode.isString())
         {
-            (*i)["prior"] >> params.priors[j];
+            string s;
+            priorNode >> s;
+            if (s == "auto")
+            {
+                params.equalizePriors[j] = true;
+                params.priors[j] = Mat();
+                params.rfParams[j].priors = 0;
+            }
+        }
+        else
+        {
+            priorNode >> params.priors[j];
             params.rfParams[j].priors = reinterpret_cast<const float*>(params.priors[j].data);
         }
     }
@@ -168,7 +240,18 @@ void DRFClassifier::write(FileStorage & fs) const
         fs << "useSurrogateSplits" << params.rfParams[i].use_surrogates;
         fs << "treesNum" << params.rfParams[i].term_crit.max_iter;
         fs << "activeFeaturesPerNode" << params.rfParams[i].nactive_vars;
-        fs << "prior" << params.priors[i];
+        if (params.equalizePriors[i])
+        {
+            fs << "prior" << "auto";
+        }
+        else if (params.priors[i].empty())
+        {
+            fs << "prior" << "none";
+        }
+        else
+        {
+            fs << "prior" << params.priors[i];
+        }
         fs << "}";
     }
     fs << "]";
