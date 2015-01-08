@@ -65,6 +65,20 @@ void RawPixel::setParams(const RawPixelParams & p)
 void RawPixel::read(const cv::FileNode & fn)
 {
     Algorithm::read(fn);
+    if (params.doWhitening && fn["whiteningTransform"].isString())
+    {
+        string whiteningFile, whiteningName;
+        fn["whiteningTransform"] >> whiteningFile;
+        fn["whiteningTransformName"] >> whiteningName;
+        FileStorage fs(whiteningFile, FileStorage::READ);
+        CV_Assert(fs.isOpened());
+        fs[whiteningName] >> params.whiteningTransform;
+        fs.release();
+    }
+    else
+    {
+        fn["whiteningTransform"] >> params.whiteningTransform;
+    }
     initDescriptor();
 }
 
@@ -95,7 +109,7 @@ void RawPixel::getFeatureVector(int positionX,
              params.winSizeH);
     Mat patch = scaledImg(roi).clone();
     patch = patch.reshape(1, 1);
-    CV_Assert(patch.total() == getFeatureVectorLength());
+    CV_Assert(static_cast<int>(patch.total()) == getFeatureVectorLength());
     patch.convertTo(featureVector, CV_32F);
     if (params.doNormalization)
     {
