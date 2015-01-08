@@ -73,11 +73,13 @@ void RawPixel::read(const cv::FileNode & fn)
         FileStorage fs(whiteningFile, FileStorage::READ);
         CV_Assert(fs.isOpened());
         fs[whiteningName] >> params.whiteningTransform;
+        params.whiteningTransform = params.whiteningTransform.t();
         fs.release();
     }
     else
     {
         fn["whiteningTransform"] >> params.whiteningTransform;
+        params.whiteningTransform = params.whiteningTransform.t();
     }
     initDescriptor();
 }
@@ -220,5 +222,5 @@ void RawPixel::normalizeSample(Mat & sample) const
 
 void RawPixel::whitenSample(Mat & sample) const
 {
-    sample = params.whiteningTransform * sample;
+    sample = sample * params.whiteningTransform;
 }
