@@ -76,7 +76,7 @@ void RawPixel::read(const cv::FileNode & fn)
         params.whiteningTransform = params.whiteningTransform.t();
         fs.release();
     }
-    else
+    else if (params.doWhitening)
     {
         fn["whiteningTransform"] >> params.whiteningTransform;
         params.whiteningTransform = params.whiteningTransform.t();
