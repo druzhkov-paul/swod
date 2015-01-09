@@ -392,11 +392,8 @@ int main(int argc, char ** argv)
                 (*nms)(ann.bboxes, ann.scores);
             }
             cout << ann.bboxes.size() << " filtered detections" << endl;
+            ann.labels.assign(ann.bboxes.size(), 0);
 
-            for (size_t k = 0; k < ann.labels.size(); ++k)
-            {
-                ann.labels[k] = 0;
-            }
             ann.addBBoxesBorder(detectorParams.winSize,
                                 detectorParams.winBorder);
         }
