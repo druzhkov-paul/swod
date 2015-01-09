@@ -215,7 +215,8 @@ int main(int argc, char ** argv)
                                    "{|posname|annotation|name of the positive annotation file node to read from}"
                                    "{|neg||path to annotation with negative examples}"
                                    "{|negname|annotation|name of the negative annotation file node to read from}"
-                                   "{|dump||prefix of files to save dataset to}"
+                                   "{|dumpdata||prefix of files to save dataset to}"
+                                   "{|dumpneg||prefix of files to additional negatives annotation to}"
                                    "{|rand|50|number of random samples to draw from each negative image}"
                                    "{|bi|3|number of bootstrap iterations}"
                                    "{|samples|0|number of samples to draw from all false detections at each iteration. All false positives are used by default}"
@@ -344,12 +345,12 @@ int main(int argc, char ** argv)
     cout << "done" << endl;
     cout << "dataset size: " << samplesNum << " x " << samples.cols << endl;
 
-    if (cmdParser.get<string>("dump") != "")
+    if (cmdParser.get<string>("dumpdata") != "")
     {
-        cout << "saving dataset to " << cmdParser.get<string>("dump") << "-0.csv..." << flush;
+        cout << "saving dataset to " << cmdParser.get<string>("dumpdata") << "-0.csv..." << flush;
         dumpDatasetCSV(samples.rowRange(0, samplesNum),
                        responses.rowRange(0, samplesNum),
-                       cmdParser.get<string>("dump") + "-0.csv");
+                       cmdParser.get<string>("dumpdata") + "-0.csv");
         cout << "done" << endl;
     }
 
@@ -414,14 +415,22 @@ int main(int argc, char ** argv)
         cout << "done" << endl;
         cout << "dataset size: " << samplesNum << " x " << samples.cols << endl;
 
-        if (cmdParser.get<string>("dump") != "")
+        if (cmdParser.get<string>("dumpdata") != "")
         {
             stringstream ss;
-            ss << cmdParser.get<string>("dump") << "-" << i << ".csv";
+            ss << cmdParser.get<string>("dumpdata") << "-" << i << ".csv";
             cout << "saving dataset to " << ss.str() << "..." << flush;
             dumpDatasetCSV(samples.rowRange(0, samplesNum),
                            responses.rowRange(0, samplesNum),
                            ss.str());
+            cout << "done" << endl;
+        }
+        if (cmdParser.get<string>("dumpneg") != "")
+        {
+            stringstream ss;
+            ss << cmdParser.get<string>("dumpneg") << "-" << i << ".yml";
+            cout << "saving extra negatives to " << ss.str() << "..." << flush;
+            saveDatasetAnnotation(ss.str(), "annotation", negativeAnn);
             cout << "done" << endl;
         }
 
