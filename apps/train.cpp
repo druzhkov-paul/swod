@@ -353,6 +353,14 @@ int main(int argc, char ** argv)
                        cmdParser.get<string>("dumpdata") + "-0.csv");
         cout << "done" << endl;
     }
+    if (cmdParser.get<string>("dumpneg") != "")
+    {
+        stringstream ss;
+        ss << cmdParser.get<string>("dumpneg") << "-0.yml";
+        cout << "saving extra negatives to " << ss.str() << "..." << flush;
+        saveDatasetAnnotation(ss.str(), "annotation", negativeAnn);
+        cout << "done" << endl;
+    }
 
     cout << "training classifier..." << flush;
     classifier->train(samples.rowRange(0, samplesNum),
