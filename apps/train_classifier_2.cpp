@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <ctime>
 
 using namespace std;
 using namespace cv;

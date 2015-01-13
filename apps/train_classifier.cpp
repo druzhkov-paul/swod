@@ -2,6 +2,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <iostream>
 #include <fstream>
+#include <ctime>
 
 using namespace std;
 using namespace cv;

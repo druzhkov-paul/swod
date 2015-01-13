@@ -23,6 +23,8 @@ set(SWOD_LIBRARY ${PROJECT_NAME})
 set(SWOD_TESTS "${PROJECT_NAME}_test")
 
 find_package(OpenCV REQUIRED)
+find_package(MPI QUIET)
+
 
 set(SWOD_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 include_directories("${SWOD_INCLUDE}")
@@ -43,5 +45,6 @@ message( STATUS "=========== General configuration for ${PROJECT_NAME} =========
 message( STATUS "")
 message( STATUS "   Configuration:       ${CMAKE_BUILD_TYPE}")
 message( STATUS "   OpenCV build path:   ${OpenCV_DIR}")
+message( STATUS "   MPI :                ${MPI_FOUND}")
 message( STATUS "======================================================")
 message( STATUS "")
